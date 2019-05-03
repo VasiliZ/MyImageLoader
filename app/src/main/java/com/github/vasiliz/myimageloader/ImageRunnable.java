@@ -15,6 +15,16 @@ public class ImageRunnable implements Runnable {
 
     private final ImageLoader imageLoader = ImageLoader.getInstance();
 
+    public static void closeStream(final InputStream pInputStream){
+        if (pInputStream!=null){
+            try {
+                pInputStream.close();
+            } catch (final IOException pE) {
+                pE.fillInStackTrace();
+            }
+        }
+    }
+
     @Override
     public void run() {
         LoadImageResultModel resultModel = null;
@@ -35,16 +45,16 @@ public class ImageRunnable implements Runnable {
         }
     }
 
-    private Bitmap getBitmapOnMemCache(final ImageRequestModel imageRequestModel) {
+    private synchronized Bitmap getBitmapOnMemCache(final ImageRequestModel imageRequestModel) {
         Bitmap bitmapLRU;
-        synchronized (imageLoader.getSync()) {
-            bitmapLRU = imageLoader.getLruCache().get(imageRequestModel.getUrl());
-            if (bitmapLRU != null) {
-                return bitmapLRU;
-            } else {
-                bitmapLRU = getBitmapOnDiskCache(imageRequestModel);
-            }
+
+        bitmapLRU = imageLoader.getLruCache().get(imageRequestModel.getUrl());
+        if (bitmapLRU != null) {
+            return bitmapLRU;
+        } else {
+            bitmapLRU = getBitmapOnDiskCache(imageRequestModel);
         }
+
         return bitmapLRU;
     }
 
@@ -62,11 +72,12 @@ public class ImageRunnable implements Runnable {
 
     private Bitmap getBitmapOnDiskCache(final ImageRequestModel imageRequestModel) {
         final Bitmap bitmap;
+        InputStream inputStream = null;
         if (imageLoader.getIDiskCache() != null) {
             try {
                 final File file = imageLoader.getIDiskCache().getFile(imageRequestModel.getUrl());
                 if (file != null) {
-                    final InputStream inputStream = new FileInputStreamProvider().get(file);
+                    inputStream = new FileInputStreamProvider().get(file);
                     bitmap = imageLoader.getResizedBitmap(inputStream, imageRequestModel.getWidth(), imageRequestModel.getHeight());
 
                     if (bitmap != null) {
@@ -77,6 +88,8 @@ public class ImageRunnable implements Runnable {
                 }
             } catch (final Exception e) {
                 e.fillInStackTrace();
+            } finally {
+                closeStream(inputStream);
             }
         }
         return null;
@@ -85,11 +98,20 @@ public class ImageRunnable implements Runnable {
     private Bitmap downLoadImage(final ImageRequestModel imageRequestModel) {
 
         Bitmap bitmap = null;
+        InputStream inputStream = null;
         try {
-            final InputStream inputStream = new HttpInputStreamProvider().get(imageRequestModel.getUrl());
+            inputStream = new HttpInputStreamProvider().get(imageRequestModel.getUrl());
             bitmap = imageLoader.getResizedBitmap(inputStream, imageRequestModel.getWidth(), imageRequestModel.getHeight());
         } catch (final IOException e) {
             e.fillInStackTrace();
+        } finally {
+            if (inputStream != null) {
+                try {
+                    inputStream.close();
+                } catch (final IOException pE) {
+                    pE.fillInStackTrace();
+                }
+            }
         }
         if (bitmap != null) {
             imageLoader.cacheBitmap(imageRequestModel, bitmap);

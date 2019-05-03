@@ -8,14 +8,13 @@ import java.lang.ref.WeakReference;
 
 public final class ImageRequestModel {
 
-    private String mUrl;
-    private WeakReference<ImageView> mPointImage;
-    private VideoView mViewWeakReference;
+    private final String mUrl;
+    private final WeakReference<ImageView> mPointImage;
     private int mWidth;
     private int mHeight;
-    private Context mContext;
+    private final Context mContext;
 
-    public WeakReference<ImageView> getPointImage() {
+    WeakReference<ImageView> getPointImage() {
         return mPointImage;
     }
 
@@ -31,24 +30,18 @@ public final class ImageRequestModel {
         mUrl = pBuilder.mUrl;
         mPointImage = pBuilder.mPointImage;
         mContext = pBuilder.mContext;
-        mViewWeakReference = pBuilder.mVideoView;
     }
 
-    public VideoView getViewWeakReference() {
-        return mViewWeakReference;
-    }
 
     public Context getContext() {
         return mContext;
     }
 
-    public String getUrl() {
+    String getUrl() {
         return mUrl;
     }
 
-    public void setUrl(final String pUrl) {
-        mUrl = pUrl;
-    }
+
 
     public void setWidth(final int pWidth) {
         mWidth = pWidth;
@@ -63,14 +56,13 @@ public final class ImageRequestModel {
         private final ImageLoader mImageLoader;
         private String mUrl;
         private WeakReference<ImageView> mPointImage;
-        private VideoView mVideoView;
         private Context mContext;
 
-        public Builder(final ImageLoader pImageLoader) {
+        Builder(final ImageLoader pImageLoader) {
             mImageLoader = pImageLoader;
         }
 
-        public Builder with(final Context pContext) {
+        Builder with(final Context pContext) {
             mContext = pContext;
             return this;
         }
@@ -83,11 +75,6 @@ public final class ImageRequestModel {
         public void into(final ImageView pValue) {
             mPointImage = new WeakReference<>(pValue);
             mImageLoader.enqueue(this.build());
-        }
-
-        public void into(final VideoView pVideoView) {
-            mVideoView = pVideoView;
-            mImageLoader.enqueueVideo(this.build());
         }
 
         ImageRequestModel build() {

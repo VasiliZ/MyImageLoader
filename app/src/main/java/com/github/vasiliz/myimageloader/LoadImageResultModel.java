@@ -8,19 +8,19 @@ public class LoadImageResultModel {
     private Bitmap mBitmap;
     private Exception mException;
 
-    public LoadImageResultModel(final ImageRequestModel pItemRequestModel) {
+    LoadImageResultModel(final ImageRequestModel pItemRequestModel) {
         mItemRequestModel = pItemRequestModel;
     }
 
-    public ImageRequestModel getItemRequestModel() {
+    ImageRequestModel getItemRequestModel() {
         return mItemRequestModel;
     }
 
-    public Bitmap getBitmap() {
+    Bitmap getBitmap() {
         return mBitmap;
     }
 
-    public void setBitmap(final Bitmap pBitmap) {
+    void setBitmap(final Bitmap pBitmap) {
         mBitmap = pBitmap;
     }
 
@@ -28,7 +28,7 @@ public class LoadImageResultModel {
         return mException;
     }
 
-    public void setException(final Exception pException) {
+    void setException(final Exception pException) {
         mException = pException;
     }
 

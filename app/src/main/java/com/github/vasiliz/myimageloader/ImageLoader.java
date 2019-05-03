@@ -3,14 +3,10 @@ package com.github.vasiliz.myimageloader;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.media.MediaPlayer;
-import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.v4.util.LruCache;
 import android.view.ViewTreeObserver;
 import android.widget.ImageView;
-import android.widget.MediaController;
-import android.widget.VideoView;
 
 import com.github.vasiliz.myimageloader.diskCache.CacheBitmap;
 import com.github.vasiliz.myimageloader.diskCache.IDiskCache;
@@ -22,20 +18,19 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.ThreadPoolExecutor;
 
-public class ImageLoader {
+public final class ImageLoader {
 
     private final ThreadPoolExecutor mThreadPoolExecutor;
     private final Object mSync;
     private final LruCache<String, Bitmap> mLruCache;
     private final LinkedBlockingDeque<ImageRequestModel> mImageQueue;
     private static final int MAX_MEMORY_FOR_LRU_CACHE = 1024 * 1024 * 8;
-    private Context mContext;
 
-    public IDiskCache getIDiskCache() {
+    IDiskCache getIDiskCache() {
         return mIDiskCache;
     }
 
-    private IDiskCache mIDiskCache;
+    private final IDiskCache mIDiskCache;
 
     private static final class ImageLoaderHolder {
 
@@ -65,6 +60,7 @@ public class ImageLoader {
     }
 
     LinkedBlockingDeque<ImageRequestModel> getImageQueue() {
+        //noinspection AssignmentOrReturnOfFieldWithMutableType
         return mImageQueue;
     }
 
@@ -97,38 +93,6 @@ public class ImageLoader {
         } else {
             waitImageRequest(pImageRequestModel);
         }
-    }
-
-    void enqueueVideo(final ImageRequestModel pImageRequestModel) {
-        final VideoView videoView = pImageRequestModel.getViewWeakReference();
-        if (videoView == null) {
-            return;
-        }
-
-        MediaController mediaController = new MediaController(pImageRequestModel.getContext());
-        mediaController.setMediaPlayer(videoView);
-        videoView.setMediaController(mediaController);
-
-        Uri uri = Uri.parse(pImageRequestModel.getUrl());
-        videoView.setVideoURI(uri);
-
-        videoView.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
-
-            @Override
-            public void onPrepared(MediaPlayer mp) {
-                videoView.seekTo(1);
-                //    videoView.start();
-            }
-        });
-
-        videoView.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-
-            @Override
-            public void onCompletion(MediaPlayer mp) {
-                videoView.seekTo(0);
-            }
-        });
-
     }
 
     private void waitImageRequest(final ImageRequestModel pImageRequestModel) {
@@ -198,7 +162,7 @@ public class ImageLoader {
 
     Bitmap getResizedBitmap(final InputStream pInputStream,
                             final int pWidth,
-                            final int pHeigth)
+                            final int pHeight)
             throws IOException {
 
         final BitmapFactory.Options options = new BitmapFactory.Options();
@@ -217,7 +181,7 @@ public class ImageLoader {
         options.inJustDecodeBounds = true;
         BitmapFactory.decodeByteArray(bytes, 0, bytes.length, options);
 
-        options.inSampleSize = calculateSampleSize(options, pWidth, pHeigth);
+        options.inSampleSize = calculateSampleSize(options, pWidth, pHeight);
 
         options.inJustDecodeBounds = false;
 
@@ -245,19 +209,15 @@ public class ImageLoader {
     void cacheBitmap(final ImageRequestModel pImageRequestModel, final Bitmap pBitmap) {
         synchronized (mSync) {
             mLruCache.put(pImageRequestModel.getUrl(), pBitmap);
-        }
 
-        try {
-            if (mIDiskCache != null) {
-                mIDiskCache.save(pImageRequestModel.getUrl(), pBitmap);
+            try {
+                if (mIDiskCache != null) {
+                    mIDiskCache.save(pImageRequestModel.getUrl(), pBitmap);
+                }
+            } catch (final IOException pE) {
+                pE.fillInStackTrace();
             }
-        } catch (final IOException pE) {
-            pE.printStackTrace();
         }
-    }
-
-    Object getSync() {
-        return mSync;
     }
 
 }
