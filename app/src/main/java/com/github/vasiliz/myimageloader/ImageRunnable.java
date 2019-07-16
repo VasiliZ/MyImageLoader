@@ -1,8 +1,6 @@
 package com.github.vasiliz.myimageloader;
 
 import android.graphics.Bitmap;
-import android.os.Handler;
-import android.os.Looper;
 
 import com.github.vasiliz.myimageloader.streams.FileInputStreamProvider;
 import com.github.vasiliz.myimageloader.streams.HttpInputStreamProvider;
@@ -15,8 +13,8 @@ public class ImageRunnable implements Runnable {
 
     private final ImageLoader imageLoader = ImageLoader.getInstance();
 
-    public static void closeStream(final InputStream pInputStream){
-        if (pInputStream!=null){
+    public static void closeStream(final InputStream pInputStream) {
+        if (pInputStream != null) {
             try {
                 pInputStream.close();
             } catch (final IOException pE) {
@@ -28,7 +26,6 @@ public class ImageRunnable implements Runnable {
     @Override
     public void run() {
         LoadImageResultModel resultModel = null;
-
         try {
             final ImageRequestModel imageRequestModel = imageLoader.getImageQueue().takeFirst();
             resultModel = new LoadImageResultModel(imageRequestModel);
@@ -59,15 +56,11 @@ public class ImageRunnable implements Runnable {
     }
 
     private void setBitmapOnView(final LoadImageResultModel resultModel) {
-        final Handler handler = new Handler(Looper.getMainLooper());
-        final Runnable runnable = new Runnable() {
-
-            @Override
-            public void run() {
-                imageLoader.setImageOnBitmap(resultModel);
-            }
-        };
-        handler.post(runnable);
+        resultModel
+                .getItemRequestModel()
+                .getPointImage()
+                .get()
+                .setImageBitmap(resultModel.getBitmap());
     }
 
     private Bitmap getBitmapOnDiskCache(final ImageRequestModel imageRequestModel) {

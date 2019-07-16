@@ -109,13 +109,16 @@ public final class ImageLoader {
                 }
 
                 image.getViewTreeObserver().removeOnPreDrawListener(this);
-
-                if (image.getHeight() > 0 && image.getWidth() > 0) {
+                if (pImageRequestModel.getHeight() != 0 && pImageRequestModel.getWidth() != 0) {
+                    enqueue(pImageRequestModel);
+                    return true;
+                }else {
                     pImageRequestModel.setWidth(image.getWidth());
                     pImageRequestModel.setHeight(image.getHeight());
 
                     enqueue(pImageRequestModel);
                 }
+
                 return true;
 
             }

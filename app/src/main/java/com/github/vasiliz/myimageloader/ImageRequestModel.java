@@ -2,7 +2,6 @@ package com.github.vasiliz.myimageloader;
 
 import android.content.Context;
 import android.widget.ImageView;
-import android.widget.VideoView;
 
 import java.lang.ref.WeakReference;
 
@@ -30,6 +29,8 @@ public final class ImageRequestModel {
         mUrl = pBuilder.mUrl;
         mPointImage = pBuilder.mPointImage;
         mContext = pBuilder.mContext;
+        mHeight = pBuilder.mHeight;
+        mWidth = pBuilder.mWidth;
     }
 
 
@@ -42,7 +43,6 @@ public final class ImageRequestModel {
     }
 
 
-
     public void setWidth(final int pWidth) {
         mWidth = pWidth;
     }
@@ -51,12 +51,15 @@ public final class ImageRequestModel {
         mHeight = pHeight;
     }
 
+
     public static final class Builder {
 
         private final ImageLoader mImageLoader;
         private String mUrl;
         private WeakReference<ImageView> mPointImage;
         private Context mContext;
+        private int mWidth;
+        private int mHeight;
 
         Builder(final ImageLoader pImageLoader) {
             mImageLoader = pImageLoader;
@@ -67,13 +70,24 @@ public final class ImageRequestModel {
             return this;
         }
 
+        public Builder setWith(final int pWidth) {
+            mWidth = pWidth;
+            return this;
+        }
+
+
+        public Builder setHeight(final int pHeight) {
+            mHeight = pHeight;
+            return this;
+        }
+
         public Builder load(final String pValue) {
             mUrl = pValue;
             return this;
         }
 
-        public void into(final ImageView pValue) {
-            mPointImage = new WeakReference<>(pValue);
+        public void into(final ImageView pImageView) {
+            mPointImage = new WeakReference<>(pImageView);
             mImageLoader.enqueue(this.build());
         }
 
@@ -81,6 +95,13 @@ public final class ImageRequestModel {
             return new ImageRequestModel(this);
         }
 
+        public int getWidth() {
+            return mWidth;
+        }
+
+        public int getHeight() {
+            return mHeight;
+        }
     }
 
 }
